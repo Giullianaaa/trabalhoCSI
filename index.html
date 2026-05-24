@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HTTP & HTTPS — Guia Completo</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #050A14;
+    --surface: #0C1525;
+    --surface2: #111E35;
+    --border: #1C2E4A;
+    --accent: #00D4FF;
+    --accent2: #FF6B35;
+    --accent3: #7B61FF;
+    --text: #E8EFF8;
+    --muted: #6B82A0;
+    --success: #00E5A0;
+    --warning: #FFB800;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 16px;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* ── GRID BACKGROUND ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,212,255,.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(5,10,20,.85);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 60px;
+  }
+  .nav-logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.1rem;
+    letter-spacing: .05em;
+    color: var(--accent);
+  }
+  .nav-links { display: flex; gap: 2rem; }
+  .nav-links a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: .85rem;
+    font-weight: 500;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    transition: color .2s;
+  }
+  .nav-links a:hover { color: var(--accent); }
+
+  /* ── HERO ── */
+  .hero {
+    position: relative;
+    z-index: 1;
+    min-height: 92vh;
+    display: flex;
+    align-items: center;
+    padding: 6rem 2rem 4rem;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  .hero-inner { max-width: 700px; }
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    background: rgba(0,212,255,.08);
+    border: 1px solid rgba(0,212,255,.2);
+    color: var(--accent);
+    font-size: .75rem;
+    font-weight: 600;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    padding: .35rem .9rem;
+    border-radius: 100px;
+    margin-bottom: 2rem;
+    animation: fadeUp .6s ease both;
+  }
+  .hero-badge::before { content: '●'; font-size: .5rem; animation: pulse 2s infinite; }
+
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(2.8rem, 6vw, 5rem);
+    font-weight: 800;
+    line-height: 1.08;
+    letter-spacing: -.02em;
+    margin-bottom: 1.5rem;
+    animation: fadeUp .6s .1s ease both;
+  }
+  h1 .line-accent { color: var(--accent); }
+  h1 .line-orange { color: var(--accent2); }
+
+  .hero-desc {
+    font-size: 1.1rem;
+    color: var(--muted);
+    max-width: 560px;
+    margin-bottom: 3rem;
+    animation: fadeUp .6s .2s ease both;
+    font-weight: 300;
+  }
+  .hero-stats {
+    display: flex;
+    gap: 3rem;
+    animation: fadeUp .6s .3s ease both;
+  }
+  .stat { }
+  .stat-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--accent);
+    line-height: 1;
+  }
+  .stat-label { font-size: .78rem; color: var(--muted); margin-top: .25rem; text-transform: uppercase; letter-spacing: .06em; }
+
+  .hero-visual {
+    position: absolute;
+    right: -100px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 480px;
+    height: 480px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 40% 40%, rgba(123,97,255,.3), transparent 60%),
+                radial-gradient(circle at 70% 70%, rgba(0,212,255,.15), transparent 50%);
+    filter: blur(2px);
+    pointer-events: none;
+    animation: spin 30s linear infinite;
+  }
+  @keyframes spin { to { transform: translateY(-50%) rotate(360deg); } }
+
+  /* ── SECTION WRAPPER ── */
+  .section {
+    position: relative;
+    z-index: 1;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 5rem 2rem;
+  }
+  .section-label {
+    display: inline-block;
+    font-size: .7rem;
+    font-weight: 700;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 1rem;
+    padding: .3rem .8rem;
+    border: 1px solid rgba(0,212,255,.25);
+    border-radius: 4px;
+  }
+  h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+    font-weight: 700;
+    letter-spacing: -.02em;
+    margin-bottom: 1rem;
+    line-height: 1.15;
+  }
+  .section-intro {
+    color: var(--muted);
+    max-width: 600px;
+    margin-bottom: 3.5rem;
+    font-size: 1rem;
+    font-weight: 300;
+  }
+
+  /* ── CARDS ── */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+  .card {
+    background: var(--surface);
+    padding: 2.5rem;
+    transition: background .3s;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--card-color, var(--accent)), transparent);
+    opacity: 0;
+    transition: opacity .3s;
+  }
+  .card:hover { background: var(--surface2); }
+  .card:hover::before { opacity: 1; }
+
+  .card-number {
+    font-family: 'Syne', sans-serif;
+    font-size: 4rem;
+    font-weight: 800;
+    color: var(--card-color, var(--accent));
+    opacity: .12;
+    line-height: 1;
+    margin-bottom: 1rem;
+    letter-spacing: -.04em;
+  }
+  .card-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: var(--card-color, var(--accent));
+  }
+  .card-year {
+    font-size: .75rem;
+    color: var(--muted);
+    font-weight: 600;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    margin-bottom: .75rem;
+  }
+  .card p { font-size: .92rem; color: var(--muted); line-height: 1.7; }
+  .card-tags { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1.5rem; }
+  .tag {
+    font-size: .7rem;
+    font-weight: 600;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    padding: .25rem .65rem;
+    border-radius: 100px;
+    background: rgba(255,255,255,.05);
+    border: 1px solid rgba(255,255,255,.08);
+    color: var(--muted);
+  }
+
+  .card-http1 { --card-color: #FF6B35; }
+  .card-http2 { --card-color: #00D4FF; }
+  .card-http3 { --card-color: #7B61FF; }
+
+  /* ── COMPARISON TABLE ── */
+  .compare-section { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+  .compare-header {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr 1fr;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+  }
+  .compare-header div {
+    padding: 1.2rem 1.5rem;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: .85rem;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+  }
+  .compare-header .col-http { color: var(--accent2); }
+  .compare-header .col-https { color: var(--success); }
+
+  .compare-row {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr 1fr;
+    border-bottom: 1px solid var(--border);
+    transition: background .2s;
+  }
+  .compare-row:last-child { border-bottom: none; }
+  .compare-row:hover { background: rgba(255,255,255,.02); }
+  .compare-row div { padding: 1.1rem 1.5rem; font-size: .88rem; display: flex; align-items: center; gap: .5rem; }
+  .compare-row .feature { color: var(--muted); font-weight: 500; }
+  .bad { color: #FF5C5C; }
+  .good { color: var(--success); }
+  .icon { font-size: .9rem; }
+
+  /* ── FEATURE BLOCKS ── */
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1rem;
+  }
+  .feature-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.75rem;
+    transition: border-color .3s, transform .3s;
+  }
+  .feature-block:hover {
+    border-color: rgba(0,212,255,.3);
+    transform: translateY(-3px);
+  }
+  .feature-icon {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+  }
+  .feature-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: .6rem;
+    color: var(--text);
+  }
+  .feature-block p { font-size: .88rem; color: var(--muted); }
+
+  /* ── TIMELINE ── */
+  .timeline {
+    position: relative;
+    padding-left: 2rem;
+  }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0; bottom: 0;
+    width: 1px;
+    background: linear-gradient(to bottom, var(--accent), var(--accent3), transparent);
+  }
+  .timeline-item {
+    position: relative;
+    margin-bottom: 2.5rem;
+    padding-left: 2rem;
+    animation: fadeUp .5s ease both;
+  }
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -2.5rem;
+    top: .4rem;
+    width: 9px; height: 9px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 2px solid var(--bg);
+    box-shadow: 0 0 0 3px rgba(0,212,255,.2);
+  }
+  .timeline-year {
+    font-family: 'Syne', sans-serif;
+    font-size: .7rem;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: .4rem;
+  }
+  .timeline-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: .4rem;
+  }
+  .timeline-item p { font-size: .9rem; color: var(--muted); }
+
+  /* ── QUIC SECTION ── */
+  .quic-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+  .quic-item {
+    background: var(--surface);
+    padding: 2rem;
+    transition: background .3s;
+  }
+  .quic-item:hover { background: var(--surface2); }
+  .quic-item-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    margin-bottom: .75rem;
+    color: var(--accent3);
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+  }
+  .quic-item p { font-size: .875rem; color: var(--muted); }
+
+  /* ── TIPS ── */
+  .tip-box {
+    background: linear-gradient(135deg, rgba(0,212,255,.06), rgba(123,97,255,.06));
+    border: 1px solid rgba(0,212,255,.2);
+    border-radius: 12px;
+    padding: 1.5rem 2rem;
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+  }
+  .tip-box .tip-icon { font-size: 1.2rem; flex-shrink: 0; margin-top: .1rem; }
+  .tip-box strong { display: block; font-family: 'Syne', sans-serif; margin-bottom: .35rem; font-size: .95rem; }
+  .tip-box p { font-size: .875rem; color: var(--muted); }
+
+  /* ── FORMULA ── */
+  .formula {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    margin: 3rem 0;
+    font-family: 'Syne', sans-serif;
+    font-size: 2.5rem;
+    font-weight: 800;
+  }
+  .formula-item {
+    padding: 1rem 2rem;
+    border-radius: 12px;
+    letter-spacing: -.02em;
+  }
+  .formula-http { background: rgba(255,107,53,.1); border: 2px solid rgba(255,107,53,.3); color: var(--accent2); }
+  .formula-ssl { background: rgba(0,229,160,.1); border: 2px solid rgba(0,229,160,.3); color: var(--success); }
+  .formula-https { background: rgba(0,212,255,.1); border: 2px solid rgba(0,212,255,.3); color: var(--accent); }
+  .formula-op { color: var(--muted); }
+
+  /* ── FOOTER ── */
+  footer {
+    position: relative;
+    z-index: 1;
+    border-top: 1px solid var(--border);
+    padding: 2rem;
+    text-align: center;
+    color: var(--muted);
+    font-size: .8rem;
+  }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity .6s ease, transform .6s ease;
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* ── DIVIDER ── */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  @media (max-width: 700px) {
+    .hero-visual { display: none; }
+    .compare-header, .compare-row { grid-template-columns: 1.2fr 1fr 1fr; }
+    .quic-grid { grid-template-columns: 1fr; }
+    .formula { font-size: 1.5rem; gap: .75rem; }
+    .formula-item { padding: .75rem 1rem; }
+    .hero-stats { gap: 1.5rem; }
+    .nav-links { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">HTTP ↔ HTTPS</div>
+  <div class="nav-links">
+    <a href="#versoes">Versões</a>
+    <a href="#comparacao">HTTP vs HTTPS</a>
+    <a href="#quic">QUIC</a>
+    <a href="#vantagens">Vantagens</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-badge">Guia Completo de Protocolos Web</div>
+    <h1>
+      <span class="line-accent">HTTP</span> &amp;<br>
+      <span class="line-orange">HTTPS</span><br>
+      explicados
+    </h1>
+    <p class="hero-desc">
+      Da primeira versão de 1997 ao revolucionário HTTP/3 com QUIC — entenda como a web evoluiu e por que a segurança importa.
+    </p>
+    <div class="hero-stats">
+      <div class="stat">
+        <div class="stat-num">3</div>
+        <div class="stat-label">Versões HTTP</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">99%</div>
+        <div class="stat-label">Chrome em HTTPS</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">77%</div>
+        <div class="stat-label">Usuários preocupados</div>
+      </div>
+    </div>
+  </div>
+  <div class="hero-visual"></div>
+</section>
+
+<hr class="divider">
+
+<!-- VERSÕES HTTP -->
+<section class="section" id="versoes">
+  <div class="section-label reveal">Protocolo HTTP</div>
+  <h2 class="reveal">A evolução do protocolo</h2>
+  <p class="section-intro reveal">Três gerações, cada uma resolvendo os problemas da anterior e redefinindo a velocidade e eficiência da web.</p>
+
+  <div class="cards-grid reveal">
+    <div class="card card-http1">
+      <div class="card-number">1</div>
+      <div class="card-year">Desde 1997</div>
+      <div class="card-title">HTTP/1</div>
+      <p>A versão original, baseada no modelo de solicitação-resposta. Cada recurso exige uma conexão separada — imagens, CSS e JavaScript abrem múltiplas conexões simultâneas, causando atrasos perceptíveis.</p>
+      <div class="card-tags">
+        <span class="tag">Conexão separada</span>
+        <span class="tag">TCP</span>
+        <span class="tag">Latência alta</span>
+      </div>
+    </div>
+    <div class="card card-http2">
+      <div class="card-number">2</div>
+      <div class="card-year">Desde 2015</div>
+      <div class="card-title">HTTP/2</div>
+      <p>Multiplexação real: múltiplas solicitações trafegam numa única conexão. A compressão de cabeçalhos (HPACK) reduz o volume de dados, e o suporte nativo a criptografia HTTPS o torna ainda mais eficiente.</p>
+      <div class="card-tags">
+        <span class="tag">Multiplexação</span>
+        <span class="tag">Compressão</span>
+        <span class="tag">TCP</span>
+      </div>
+    </div>
+    <div class="card card-http3">
+      <div class="card-number">3</div>
+      <div class="card-year">Desde 2021</div>
+      <div class="card-title">HTTP/3</div>
+      <p>Abandona o TCP em favor do QUIC (sobre UDP). Elimina o bloqueio de cabeçalho de linha, suporta migração de rede sem interrupção e criptografa tudo por padrão — perfeito para dispositivos móveis.</p>
+      <div class="card-tags">
+        <span class="tag">QUIC / UDP</span>
+        <span class="tag">0-RTT</span>
+        <span class="tag">Criptografado</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- HTTP vs HTTPS -->
+<section class="section" id="comparacao">
+  <div class="section-label reveal">Segurança</div>
+  <h2 class="reveal">HTTP vs. HTTPS</h2>
+  <p class="section-intro reveal">A diferença fundamental é uma camada de criptografia que protege todos os dados em trânsito.</p>
+
+  <div class="formula reveal">
+    <div class="formula-item formula-https">HTTPS</div>
+    <div class="formula-op">=</div>
+    <div class="formula-item formula-http">HTTP</div>
+    <div class="formula-op">+</div>
+    <div class="formula-item formula-ssl">SSL / TLS</div>
+  </div>
+
+  <div class="compare-section reveal">
+    <div class="compare-header">
+      <div>Característica</div>
+      <div class="col-http">HTTP</div>
+      <div class="col-https">HTTPS</div>
+    </div>
+    <div class="compare-row">
+      <div class="feature">Criptografia de dados</div>
+      <div class="bad"><span class="icon">✗</span> Nenhuma</div>
+      <div class="good"><span class="icon">✓</span> SSL / TLS</div>
+    </div>
+    <div class="compare-row">
+      <div class="feature">Proteção contra interceptação</div>
+      <div class="bad"><span class="icon">✗</span> Vulnerável</div>
+      <div class="good"><span class="icon">✓</span> Protegida</div>
+    </div>
+    <div class="compare-row">
+      <div class="feature">Indicador no navegador</div>
+      <div class="bad"><span class="icon">⚠</span> "Não seguro"</div>
+      <div class="good"><span class="icon">🔒</span> Cadeado</div>
+    </div>
+    <div class="compare-row">
+      <div class="feature">Autenticação do servidor</div>
+      <div class="bad"><span class="icon">✗</span> Não</div>
+      <div class="good"><span class="icon">✓</span> Certificado</div>
+    </div>
+    <div class="compare-row">
+      <div class="feature">Ranqueamento no Google</div>
+      <div class="bad"><span class="icon">↓</span> Penalizado</div>
+      <div class="good"><span class="icon">↑</span> Favorecido</div>
+    </div>
+    <div class="compare-row">
+      <div class="feature">Compatibilidade com HTTP/2</div>
+      <div class="bad"><span class="icon">✗</span> Não</div>
+      <div class="good"><span class="icon">✓</span> Sim</div>
+    </div>
+    <div class="compare-row">
+      <div class="feature">Dados de referência (analytics)</div>
+      <div class="bad"><span class="icon">✗</span> Perdidos</div>
+      <div class="good"><span class="icon">✓</span> Preservados</div>
+    </div>
+    <div class="compare-row">
+      <div class="feature">Confiança do usuário</div>
+      <div class="bad"><span class="icon">↓</span> 84% abandonam</div>
+      <div class="good"><span class="icon">↑</span> Alta conversão</div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- QUIC -->
+<section class="section" id="quic">
+  <div class="section-label reveal">HTTP/3</div>
+  <h2 class="reveal">O protocolo QUIC</h2>
+  <p class="section-intro reveal">Desenvolvido pelo Google em 2012 e padronizado pela IETF, o QUIC substitui o TCP e resolve problemas históricos de latência e congestionamento.</p>
+
+  <div class="quic-grid reveal">
+    <div class="quic-item">
+      <div class="quic-item-title">⚡ Sem bloqueio de fila</div>
+      <p>A perda de um pacote afeta apenas aquele fluxo, não paralisa toda a conexão. O "head-of-line blocking" do TCP é eliminado por completo.</p>
+    </div>
+    <div class="quic-item">
+      <div class="quic-item-title">🤝 Handshake ultrarrápido</div>
+      <p>O QUIC combina o handshake criptográfico e de transporte em um único passo. Conexões a servidores conhecidos podem ter 0-RTT — zero ida e volta.</p>
+    </div>
+    <div class="quic-item">
+      <div class="quic-item-title">📱 Migração de rede</div>
+      <p>Ao passar de Wi-Fi para dados móveis, a conexão QUIC continua sem interrupção. O TCP precisaria reiniciar tudo do zero nessa situação.</p>
+    </div>
+    <div class="quic-item">
+      <div class="quic-item-title">🔐 Criptografia por padrão</div>
+      <p>Diferente do TCP/TLS onde a criptografia é opcional, o QUIC é criptografado em todas as conexões. Isso torna o HTTP/3 inerentemente mais seguro.</p>
+    </div>
+    <div class="quic-item">
+      <div class="quic-item-title">📡 Baseado em UDP</div>
+      <p>O UDP é mais leve que o TCP e permite que o QUIC implemente seus próprios mecanismos de controle, sem as limitações do protocolo legado.</p>
+    </div>
+    <div class="quic-item">
+      <div class="quic-item-title">🛡 Proteção DDoS</div>
+      <p>Sistema baseado em crédito para streams permite controle refinado sobre simultaneidade, mitigando ataques de "Rapid Reset" que afetam o HTTP/2.</p>
+    </div>
+  </div>
+
+  <!-- Timeline -->
+  <div style="margin-top: 4rem;">
+    <h3 class="reveal" style="font-family:'Syne',sans-serif; font-size:1.4rem; font-weight:700; margin-bottom:2rem; color:var(--muted)">Linha do tempo</h3>
+    <div class="timeline">
+      <div class="timeline-item reveal">
+        <div class="timeline-year">1997</div>
+        <div class="timeline-title">HTTP/1.1 publicado</div>
+        <p>Primeira versão amplamente adotada. Define os fundamentos de solicitação e resposta que usamos até hoje.</p>
+      </div>
+      <div class="timeline-item reveal">
+        <div class="timeline-year">2012</div>
+        <div class="timeline-title">Google inicia o QUIC</div>
+        <p>O Google começa a desenvolver o protocolo QUIC internamente para melhorar a performance do Chrome e seus serviços.</p>
+      </div>
+      <div class="timeline-item reveal">
+        <div class="timeline-year">2015</div>
+        <div class="timeline-title">HTTP/2 aprovado</div>
+        <p>Multiplexação e compressão de cabeçalhos chegam como padrão oficial, resolvendo as limitações de desempenho do HTTP/1.</p>
+      </div>
+      <div class="timeline-item reveal">
+        <div class="timeline-year">2016</div>
+        <div class="timeline-title">IETF adota o QUIC</div>
+        <p>A organização de padrões neutra começa a trabalhar na versão oficial do QUIC, consultando especialistas do mundo todo.</p>
+      </div>
+      <div class="timeline-item reveal">
+        <div class="timeline-year">2021</div>
+        <div class="timeline-title">HTTP/3 publicado (RFC 9000)</div>
+        <p>Após anos de desenvolvimento, o HTTP/3 com QUIC é padronizado e disponibilizado ao público, incluindo via Cloudflare.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- VANTAGENS HTTPS -->
+<section class="section" id="vantagens">
+  <div class="section-label reveal">Por que HTTPS?</div>
+  <h2 class="reveal">Vantagens do HTTPS</h2>
+  <p class="section-intro reveal">Independente do tipo de site, o HTTPS é hoje o padrão esperado por usuários, mecanismos de busca e navegadores modernos.</p>
+
+  <div class="features-grid reveal">
+    <div class="feature-block">
+      <div class="feature-icon">🔒</div>
+      <div class="feature-title">Segurança de dados</div>
+      <p>Criptografa credenciais, senhas e informações de pagamento. Previne roubo de identidade, eavesdropping e falsificação de mensagens.</p>
+    </div>
+    <div class="feature-block">
+      <div class="feature-icon">📈</div>
+      <div class="feature-title">SEO melhorado</div>
+      <p>O Google favorece sites HTTPS no ranqueamento. Em 2018, 70% dos resultados na primeira página do Google já usavam HTTPS.</p>
+    </div>
+    <div class="feature-block">
+      <div class="feature-icon">⚡</div>
+      <div class="feature-title">Mais velocidade</div>
+      <p>Com HTTP/2 habilitado, sites HTTPS carregam mais rápido — menor latência, uso eficiente de banda larga e suporte a AMPs (Accelerated Mobile Pages).</p>
+    </div>
+    <div class="feature-block">
+      <div class="feature-icon">💼</div>
+      <div class="feature-title">Autoridade e confiança</div>
+      <p>99% do tempo de navegação no Chrome é em HTTPS. Quase 30% dos usuários procuram o cadeado antes de confiar em um site.</p>
+    </div>
+    <div class="feature-block">
+      <div class="feature-icon">📊</div>
+      <div class="feature-title">Analytics preciso</div>
+      <p>Tráfego de referência de fontes HTTPS é corretamente identificado. Em HTTP, esses acessos são erroneamente classificados como tráfego direto.</p>
+    </div>
+    <div class="feature-block">
+      <div class="feature-icon">🛒</div>
+      <div class="feature-title">Conversão maior</div>
+      <p>84% dos usuários abandonam o carrinho ao perceber que o site usa HTTP. O HTTPS aumenta diretamente compras, downloads e inscrições.</p>
+    </div>
+  </div>
+
+  <div style="margin-top: 3rem;">
+    <div class="tip-box reveal">
+      <div class="tip-icon">⚠️</div>
+      <div>
+        <strong>Migrando de HTTP para HTTPS?</strong>
+        <p>Atualize todos os links internos do site. URLs absolutas (com o domínio completo) precisam ser atualizadas para https://. URLs relativas (/pagina) se adaptam automaticamente.</p>
+      </div>
+    </div>
+    <div class="tip-box reveal">
+      <div class="tip-icon">✅</div>
+      <div>
+        <strong>Como verificar se um site é seguro</strong>
+        <p>Procure o ícone de cadeado (🔒) ao lado da URL no navegador, ou veja se o endereço começa com <code style="color:var(--accent);background:rgba(0,212,255,.08);padding:.1rem .4rem;border-radius:4px;">https://</code>. A ausência indica que a conexão não é criptografada.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>Integrantes <strong>Ana Giullia, Geovanna, Giulliana, João e José Henrique</strong></p>
+  <p>Turma: 2214</p>
+</footer>
+
+<script>
+  // Intersection Observer for reveal animations
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => entry.target.classList.add('visible'), i * 60);
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
